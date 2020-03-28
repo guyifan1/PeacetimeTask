@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">example1</string>
+    <string name="done">done</string>
+    <string name="reminder">reminder name</string>
+</resources>
