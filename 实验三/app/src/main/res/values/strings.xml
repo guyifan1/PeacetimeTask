@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Lab_three_UI</string>
+    <string name="simple_adapter">Simple Adapter</string>
+    <string name="Alertdialog">Alert Dialog</string>
+    <string name="XmlMenu">Xml Menu</string>
+    <string name="ActionMode">Action Mode</string>
+    <string name="title">Android app</string>
+    <string name="one">Content One</string>
+    <string name="two">Content Two</string>
+    <string name="three">Content Three</string>
+    <string name="four">Content Four</string>
+    <string name="user">用户名</string>
+    <string name="pwd">密码</string>
+    <string name="cl">取消</string>
+    <string name="Si">注册</string>
+    <string name="click">点击显示对话框</string>
+    <string name="test">测试文本</string>
+    <string name="font">字体大小</string>
+    <string name="menu">普通菜单项</string>
+    <string name="color">字体颜色</string>
+    <string name="font_10">10号字体</string>
+    <string name="font_16">16号字体</string>
+    <string name="font_20">20号字体</string>
+    <string name="color_red">红色</string>
+    <string name="color_black">黑色</string>
+</resources>

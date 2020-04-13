@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="@string/font">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item android:title="@string/font_10" android:id="@+id/font_10"></item>
+                <item android:title="@string/font_16" android:id="@+id/font_16"></item>
+                <item android:title="@string/font_20" android:id="@+id/font_20"></item>
+            </group>
+        </menu>
+
+    </item>
+    <item android:title="@string/menu" android:id="@+id/menu">
+
+    </item>
+    <item android:title="@string/color">
+        <menu>
+            <item android:title="@string/color_red" android:id="@+id/color_red"></item>
+            <item android:title="@string/color_black" android:id="@+id/color_black"></item>
+        </menu>
+    </item>
+</menu>

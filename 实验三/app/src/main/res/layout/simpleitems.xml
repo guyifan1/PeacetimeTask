@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:paddingRight="15dp"
+    android:paddingLeft="15dp"
+    android:stretchColumns="1">
+    <TableRow
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:layout_column="1">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/animaltypes"
+            android:textSize="20sp"
+            android:text="test"
+            android:gravity="center"/>
+
+        <ImageView
+            android:id="@+id/imags"
+            android:maxHeight="50dp"
+            android:maxWidth="50dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/cat"
+            android:layout_gravity="right"
+            />
+    </TableRow>
+</TableLayout>
