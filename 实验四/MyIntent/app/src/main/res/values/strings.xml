@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MyIntent</string>
+    <string name="btn">网页浏览</string>
+</resources>
