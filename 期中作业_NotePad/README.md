@@ -1,2 +1,236 @@
 # NotePad
-This is an AndroidStudio rebuild of google SDK sample NotePad
+## 一、时间戳实现
+
+## 过程：
+1.在notelist_item.xml中增加时间戳的布局，整体使用相对布局，text2为增加的时间戳部分.
+
+```css
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@android:id/text1"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:paddingLeft="5dip"
+        android:singleLine="true"
+        />
+    <TextView
+        android:id="@android:id/text2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_alignParentRight="true"
+        android:layout_alignBottom="@android:id/text1"
+        />
+</RelativeLayout>
+```
+
+2.在PROJECTION中增添修改时间字段部分，并增添dataColumns与viewIDs的修改时间映射.
+
+```java
+	/**
+     * The columns needed by the cursor adapter
+     */
+    private static final String[] PROJECTION = new String[] {
+            NotePad.Notes._ID, // 0
+            NotePad.Notes.COLUMN_NAME_TITLE, // 1
+            NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, //2
+    };
+```
+
+```java
+	// The names of the cursor columns to display in the view, initialized to the title column
+        String[] dataColumns = { NotePad.Notes.COLUMN_NAME_TITLE,NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE} ;
+
+    // The view IDs that will display the cursor columns, initialized to the TextView in
+    // noteslist_item.xml
+        int[] viewIDs = { android.R.id.text1,android.R.id.text2};
+```
+3、在NoteEditor中的updateNote函数中对修改时间进行格式转化long->date.
+
+```java
+SimpleDateFormat simpleDateFormat=new SimpleDateFormat("HH:mm:ss dd-MM-yyyy");
+//时间换算后发现换算得到的不是当前时间，而是比当前时间晚12小时，因此在获取到的当前时间基础上加上12小时，即43200000毫秒，得到当前真正时间.
+String nowDate=simpleDateFormat.format(System.currentTimeMillis()+43200000);
+values.put(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, nowDate);
+```
+
+4、在NotePadProvider中的Insert函数中进行时间格式转换long->date.
+
+```java
+SimpleDateFormat simpleDateFormat=new SimpleDateFormat("HH:mm:ss dd-MM-yyyy");
+//时间换算后发现换算得到的不是当前时间，而是比当前时间晚12小时，因此在获取到的当前时间基础上加上12小时，即43200000毫秒，得到当前真正时间.
+String nowDate=simpleDateFormat.format(System.currentTimeMillis()+43200000);
+// If the values map doesn't contain the modification date, sets the value to the current
+// time.
+if (values.containsKey(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE) == false) {
+	values.put(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, nowDate);
+}
+```
+
+## 实现结果
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200526151515207.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0d3dVlpRmFu,size_16,color_FFFFFF,t_70)
+
+## 二、搜索功能实现
+
+## 过程：
+1、在menu文件夹下的list_options_menu.xml布局文件中，添加搜索item图标.
+
+```css
+<!--  This is our one standard application action (search note items). -->
+    <item android:id="@+id/search"
+        android:icon="@android:drawable/ic_search_category_default"
+        android:title="@string/search"
+        android:showAsAction="always">
+    </item>
+```
+2、在NoteList的onOptionsItemSelected方法中，添加switch分支，实现鼠标点击搜索按钮后跳转至NoteSearch.
+
+```java
+case R.id.search:
+            //add search
+          startActivity(new Intent().setClass(this,NoteSearch.class));
+          return true;
+```
+3、NoteSearch.java，实现对输入的模糊搜索内容与各item名字的比较，并显示所有匹配的item，可继续通过点击item跳转至该item的编辑界面进行内容查看与编辑.
+
+```java
+package com.example.android.notepad;
+
+/**
+ * Created by 顾一帆 on 2020/5/25.
+ */
+import android.app.ListActivity;
+import android.content.ContentUris;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.widget.SearchView;
+import android.view.View;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+
+public class NoteSearch extends ListActivity implements SearchView.OnQueryTextListener {
+    private static final String[] PROJECTION = new String[] {
+            NotePad.Notes._ID, // 0
+            NotePad.Notes.COLUMN_NAME_TITLE, // 1
+            NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE,//2
+    };
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.note_search_show);
+        Intent intent = getIntent();
+        if (intent.getData() == null) {
+            intent.setData(NotePad.Notes.CONTENT_URI);
+        }
+        SearchView searchview = (SearchView)findViewById(R.id.search_view);
+        searchview.setOnQueryTextListener(this);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        return false;
+    }
+    //matching items
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        SearchView searchview = (SearchView)findViewById(R.id.search_view);
+        //Register listeners for query text boxes
+        searchview.setOnQueryTextListener(this);
+        String selection = NotePad.Notes.COLUMN_NAME_TITLE + " Like ? ";
+        String[] selectionArgs = { "%"+newText+"%" };
+        Cursor cursor = managedQuery(
+                getIntent().getData(),             // Use the default content URI for the provider.
+                PROJECTION,                       // Return the note ID ,title and modifcation date for each note
+                selection,
+                selectionArgs,
+                NotePad.Notes.DEFAULT_SORT_ORDER
+        );
+        String[] dataColumns = { NotePad.Notes.COLUMN_NAME_TITLE ,  NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE };
+        int[] viewIDs = { android.R.id.text1 , android.R.id.text2 };
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                R.layout.noteslist_item,
+                cursor,
+                dataColumns,
+                viewIDs
+        );
+        setListAdapter(adapter);
+        return true;
+    }
+    /**
+     * This method is called when the user clicks a note in the displayed list.
+     *
+     * This method handles incoming actions of either PICK (get data from the provider) or
+     * GET_CONTENT (get or create data). If the incoming action is EDIT, this method sends a
+     * new Intent to start NoteEditor.
+     * @param l The ListView that contains the clicked item
+     * @param v The View of the individual item
+     * @param position The position of v in the displayed list
+     * @param id The row ID of the clicked item
+     */
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        // Constructs a new URI from the incoming URI and the row ID
+        Uri uri = ContentUris.withAppendedId(getIntent().getData(), id);
+        // Gets the action from the incoming Intent
+        String action = getIntent().getAction();
+        // Handles requests for note data
+        if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
+            // Sets the result to return to the component that called this Activity. The
+            // result contains the new URI
+            setResult(RESULT_OK, new Intent().setData(uri));
+        } else {
+            // Sends out an Intent to start an Activity that can handle ACTION_EDIT. The
+            // Intent's data is the note ID URI. The effect is to call NoteEdit.
+            startActivity(new Intent(Intent.ACTION_EDIT, uri));
+        }
+    }
+}
+```
+4、新建note_search_show.xml布局文件，用于用户输入搜索内容及显示模糊搜索结果.
+
+```css
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:iconifiedByDefault="false"
+        android:queryHint="@string/input"
+        android:layout_alignParentTop="true">
+    </SearchView>
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </ListView>
+</LinearLayout>
+```
+5、最后，在AndroidManifest.xml中注册NoteSearch活动
+
+```css
+		<!--search function-->
+        <activity
+            android:name="NoteSearch"
+            android:label="@string/NotesSearch">
+        </activity>
+```
+
+## 实现结果
+**找到并单击搜索图标**
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200526151601980.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0d3dVlpRmFu,size_16,color_FFFFFF,t_70)
+
+**模糊搜索**
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2020052615170987.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0d3dVlpRmFu,size_16,color_FFFFFF,t_70)
+
