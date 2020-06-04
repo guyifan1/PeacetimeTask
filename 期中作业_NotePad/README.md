@@ -76,7 +76,15 @@ if (values.containsKey(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE) == false) {
 ## 二、搜索功能实现
 
 ## 过程：
-1、在menu文件夹下的list_options_menu.xml布局文件中，添加搜索item图标.
+1、在NoteList的onOptionsItemSelected方法中，添加switch分支，实现鼠标点击搜索按钮后跳转至NoteSearch.
+
+```java
+case R.id.search:
+            //add search
+          startActivity(new Intent().setClass(this,NoteSearch.class));
+          return true;
+```
+2、在menu文件夹下的list_options_menu.xml布局文件中，添加搜索item图标.
 
 ```css
 <!--  This is our one standard application action (search note items). -->
@@ -85,14 +93,6 @@ if (values.containsKey(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE) == false) {
         android:title="@string/search"
         android:showAsAction="always">
     </item>
-```
-2、在NoteList的onOptionsItemSelected方法中，添加switch分支，实现鼠标点击搜索按钮后跳转至NoteSearch.
-
-```java
-case R.id.search:
-            //add search
-          startActivity(new Intent().setClass(this,NoteSearch.class));
-          return true;
 ```
 3、NoteSearch.java，实现对输入的模糊搜索内容与各item名字的比较，并显示所有匹配的item，可继续通过点击item跳转至该item的编辑界面进行内容查看与编辑.
 
